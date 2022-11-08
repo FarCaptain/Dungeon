@@ -6,9 +6,9 @@ using UnityEngine.Tilemaps;
 
 public class TilemapVisualizer : MonoBehaviour
 {
-    [SerializeField] Tilemap floorTilemap;
+    [SerializeField] Tilemap floorTilemap, wallTilemap;
 
-    [SerializeField] TileBase floorTile;
+    [SerializeField] TileBase floorTile, wallTop;
 
     public void PaintFloorTiles(IEnumerable<Vector2Int> floorPos)
     {
@@ -23,6 +23,16 @@ public class TilemapVisualizer : MonoBehaviour
         }
     }
 
+    internal void PaintSingleBasicWall(Vector2Int position)
+    {
+        PaintSingleTile(wallTilemap, wallTop, position);
+    }
+
+    public void CompositeWallColliders()
+    {
+        wallTilemap.GetComponent<CompositeCollider2D>().GenerateGeometry();
+    }
+
     private void PaintSingleTile(Tilemap tilemap, TileBase tile, Vector2Int position)
     {
         var tilePosition = tilemap.WorldToCell((Vector3Int)position);
@@ -31,6 +41,7 @@ public class TilemapVisualizer : MonoBehaviour
 
     public void Clear()
     {
+        wallTilemap.ClearAllTiles();
         floorTilemap.ClearAllTiles();
     }
 }

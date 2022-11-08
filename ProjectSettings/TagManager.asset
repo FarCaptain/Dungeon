@@ -44,3 +44,6 @@ TagManager:
   - name: BackGround
     uniqueID: 451795133
     locked: 0
+  - name: Character
+    uniqueID: 1255794965
+    locked: 0

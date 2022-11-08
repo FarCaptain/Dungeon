@@ -20,6 +20,7 @@ public class RandomWalkGenerator : MonoBehaviour
         HashSet<Vector2Int> floorPosition = RunRandomWalk();
         tilemapVisualizer.Clear();
         tilemapVisualizer.PaintFloorTiles(floorPosition);
+        WallGenerator.CreateWalls(floorPosition, tilemapVisualizer);
     }
 
     protected HashSet<Vector2Int> RunRandomWalk()
