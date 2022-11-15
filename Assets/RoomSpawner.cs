@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,8 @@ public class RoomSpawner : MonoBehaviour
     public float PickedPropotion = 0.33f;
 
     public List<Room> RoomList = new List<Room>();
+    private Dictionary<Tuple<int, int>, float> Dis = new Dictionary<Tuple<int, int>, float>();
+    HashSet<Vector2Int> allTiles = new HashSet<Vector2Int>();
 
     private void Start()
     {
@@ -49,7 +52,7 @@ public class RoomSpawner : MonoBehaviour
             }
             int h = area / w;
 
-            if(Random.Range(0, 10) >= 4 && (h > w))
+            if(UnityEngine.Random.Range(0, 10) >= 4 && (h > w))
             {
                 int temp = w;
                 w = h;
@@ -88,13 +91,85 @@ public class RoomSpawner : MonoBehaviour
         }
         RoomList.RemoveRange(0, leftCnt);
         yield return new WaitForSeconds(0.1f);
+
+        GenerateCorridors();
         GenerateTiles();
+    }
+
+    private void GenerateCorridors()
+    {
+        // generate corridors
+        // uses manhattan distance
+        Dis.Clear();
+        for (int i = 0; i < RoomList.Count; i++)
+        {
+            for (int j = 0; j < RoomList.Count; j++)
+            {
+                if (i == j)
+                    continue;
+                float manh = Mathf.Abs(RoomList[i].center.x - RoomList[j].center.x) + Mathf.Abs(RoomList[i].center.y - RoomList[j].center.y);
+                Dis.Add(new Tuple<int, int>(i, j), manh);
+            }
+        }
+
+        var sortedKeyValuePairs = Dis.OrderBy(x => x.Value).ToList();
+
+        HashSet<Vector2Int> corriTiles = new HashSet<Vector2Int>();
+        //Prim Algo find MST
+        // starts from node 0
+
+        allTiles.Clear();
+
+        for (int i = 1; i < RoomList.Count; i++)
+        {
+            for (int j = 0; j < RoomList.Count; j++)
+            {
+                if (i == j) continue;
+                //Dis[new Tuple<int, int>(0, i)]
+                var key = new Tuple<int, int>(i, j);
+                var pairKey = new KeyValuePair<Tuple<int, int>, float>(key, Dis[key]);
+                if (sortedKeyValuePairs.Contains(pairKey))
+                {
+                    // first one found
+                    float xl = RoomList[key.Item1].center.x;
+                    float xr = RoomList[key.Item2].center.x;
+
+                    if (xl > xr)
+                    {
+                        float tmp = xl;
+                        xl = xr;
+                        xr = tmp;
+                    }
+
+                    float yl = RoomList[key.Item1].center.y;
+                    float yr = RoomList[key.Item2].center.y;
+
+                    if (yl > yr)
+                    {
+                        float tmp = yl;
+                        yl = yr;
+                        yr = tmp;
+                    }
+
+                    
+                    for (float y = yl; y < yr; y+=1)
+                    {
+                        corriTiles.Add(new Vector2Int((int)xl, (int)y));
+                    }
+                    for (float x = xl; x <= xr; x += 1)
+                    {
+                        corriTiles.Add(new Vector2Int((int)x, (int)yl));
+                    }
+                    break;
+                }
+            }
+        }
+
+        allTiles.UnionWith(corriTiles);
     }
 
     private void GenerateTiles()
     {
-        HashSet<Vector2Int> allTiles = new HashSet<Vector2Int>();
-
         for (int i = 0; i < RoomList.Count; i++)
         {
             allTiles.UnionWith(RoomList[i].GetRoomTiles());
@@ -108,7 +183,7 @@ public class RoomSpawner : MonoBehaviour
 
     private Vector2 GetRandomPointInCircle()
     {
-        Vector2 ret = Random.insideUnitCircle * Radius + CircleCenter;
+        Vector2 ret = UnityEngine.Random.insideUnitCircle * Radius + CircleCenter;
         return ret;
     }
 
