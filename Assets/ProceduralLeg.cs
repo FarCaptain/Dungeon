@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class ProceduralLeg : MonoBehaviour
 {
-    float thigh_length = 12;
-    float calf_length = 12;
+    //float thigh_length = 12;
+    //float calf_length = 12;
 
     // right leg
     float r_move = 0;

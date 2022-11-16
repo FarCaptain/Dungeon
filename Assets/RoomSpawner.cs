@@ -8,6 +8,7 @@ public class RoomSpawner : MonoBehaviour
 {
     public Room RoomPrefab;
     public TilemapVisualizer tilemapVisualizer;
+    [SerializeField] private GameObject character;
 
     private Vector2 CircleCenter = new Vector2(0.0f, 0.0f);
     public int Radius = 15;
@@ -19,7 +20,7 @@ public class RoomSpawner : MonoBehaviour
     public float PickedPropotion = 0.33f;
 
     public List<Room> RoomList = new List<Room>();
-    private Dictionary<Tuple<int, int>, float> Dis = new Dictionary<Tuple<int, int>, float>();
+    private Dictionary<int, List<Edge>> Dis = new Dictionary<int, List<Edge>>();
     HashSet<Vector2Int> allTiles = new HashSet<Vector2Int>();
 
     private void Start()
@@ -94,6 +95,13 @@ public class RoomSpawner : MonoBehaviour
 
         GenerateCorridors();
         GenerateTiles();
+
+        System.Random randomizer = new System.Random();
+        Vector2Int[] asArray = allTiles.ToArray();
+        var tile = asArray[randomizer.Next(asArray.Length)];
+
+        character.transform.position = (Vector3Int)tile;
+        character.SetActive(true);
     }
 
     private void GenerateCorridors()
@@ -102,68 +110,67 @@ public class RoomSpawner : MonoBehaviour
         // uses manhattan distance
         Dis.Clear();
         for (int i = 0; i < RoomList.Count; i++)
+            Dis.Add(i, new List<Edge>());
+        for (int i = 0; i < RoomList.Count; i++)
         {
             for (int j = 0; j < RoomList.Count; j++)
             {
                 if (i == j)
                     continue;
                 float manh = Mathf.Abs(RoomList[i].center.x - RoomList[j].center.x) + Mathf.Abs(RoomList[i].center.y - RoomList[j].center.y);
-                Dis.Add(new Tuple<int, int>(i, j), manh);
+                Dis[i].Add(new Edge(i, j, manh));
+                Dis[j].Add(new Edge(j, i, manh));
             }
         }
-
-        var sortedKeyValuePairs = Dis.OrderBy(x => x.Value).ToList();
 
         HashSet<Vector2Int> corriTiles = new HashSet<Vector2Int>();
         //Prim Algo find MST
-        // starts from node 0
 
         allTiles.Clear();
+        HashSet<int> vis = new HashSet<int>();
+        var proirQue = new List<Edge>();
 
-        for (int i = 1; i < RoomList.Count; i++)
+        //starts from node0
+        vis.Add(0);
+        for (int i = 0; i < Dis[0].Count; i++)
+            proirQue.Add(Dis[0][i]);
+
+        while(proirQue.Count > 0)
         {
-            for (int j = 0; j < RoomList.Count; j++)
+            proirQue.Sort(delegate (Edge a, Edge b) { return a.dis.CompareTo(b.dis); });
+            Edge e = proirQue[0];
+            proirQue.Remove(e);
+
+            if (vis.Contains(e.to))
+                continue;
+
+            vis.Add(e.to);
+            for (int i = 0; i < Dis[e.to].Count; i++)
+                proirQue.Add(Dis[e.to][i]);
+
+            float x1 = RoomList[e.from].center.x;
+            float x2 = RoomList[e.to].center.x;
+
+            float y1 = RoomList[e.from].center.y;
+            float y2 = RoomList[e.to].center.y;
+
+            float xl = Mathf.Min(x1, x2);
+            float xr = Mathf.Max(x1, x2);
+            float yl = Mathf.Min(y1, y2);
+            float yr = Mathf.Max(y1, y2);
+
+            for (float y = yl; y < yr; y += 1)
             {
-                if (i == j) continue;
-                //Dis[new Tuple<int, int>(0, i)]
-                var key = new Tuple<int, int>(i, j);
-                var pairKey = new KeyValuePair<Tuple<int, int>, float>(key, Dis[key]);
-                if (sortedKeyValuePairs.Contains(pairKey))
-                {
-                    // first one found
-                    float xl = RoomList[key.Item1].center.x;
-                    float xr = RoomList[key.Item2].center.x;
-
-                    if (xl > xr)
-                    {
-                        float tmp = xl;
-                        xl = xr;
-                        xr = tmp;
-                    }
-
-                    float yl = RoomList[key.Item1].center.y;
-                    float yr = RoomList[key.Item2].center.y;
-
-                    if (yl > yr)
-                    {
-                        float tmp = yl;
-                        yl = yr;
-                        yr = tmp;
-                    }
-
-                    
-                    for (float y = yl; y < yr; y+=1)
-                    {
-                        corriTiles.Add(new Vector2Int((int)xl, (int)y));
-                    }
-                    for (float x = xl; x <= xr; x += 1)
-                    {
-                        corriTiles.Add(new Vector2Int((int)x, (int)yl));
-                    }
-                    break;
-                }
+                corriTiles.Add(new Vector2Int((int)x1, (int)y));
             }
+            for (float x = xl; x <= xr; x += 1)
+            {
+                corriTiles.Add(new Vector2Int((int)x, (int)y2));
+            }
+
         }
+
+        //tilemapVisualizer.PaintFloorTiles(corriTiles);
 
         allTiles.UnionWith(corriTiles);
     }

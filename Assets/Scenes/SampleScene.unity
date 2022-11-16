@@ -1317,11 +1317,12 @@ MonoBehaviour:
   RoomPrefab: {fileID: 6987972915351606659, guid: e7035f84a8823a447bfd46d14a5c0aa4,
     type: 3}
   tilemapVisualizer: {fileID: 1112686139}
+  character: {fileID: 668319528}
   Radius: 36
   RoomAmount: 100
   MeanRoomArea: 30
   RoomAreaDevision: 15
-  PickedPropotion: 0.2
+  PickedPropotion: 0.4
   RoomList: []
 --- !u!4 &909915586
 Transform:
