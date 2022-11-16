@@ -30,6 +30,7 @@ public class RoomSpawner : MonoBehaviour
 
     public void SpawnRooms()
     {
+        character.SetActive(false);
         tilemapVisualizer.Clear();
         if (RoomList.Count > 0)
         {
@@ -81,7 +82,7 @@ public class RoomSpawner : MonoBehaviour
 
     IEnumerator SelectRooms()
     {
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(5.0f);
         RoomList = RoomList.OrderBy(o => o.area).ToList();
 
         int pickCnt = Mathf.RoundToInt(RoomList.Count * 1.0f * PickedPropotion);
@@ -161,11 +162,15 @@ public class RoomSpawner : MonoBehaviour
 
             for (float y = yl; y < yr; y += 1)
             {
+                //corriTiles.Add(new Vector2Int((int)x1-1, (int)y));
                 corriTiles.Add(new Vector2Int((int)x1, (int)y));
+                corriTiles.Add(new Vector2Int((int)x1+1, (int)y));
             }
             for (float x = xl; x <= xr; x += 1)
             {
+                corriTiles.Add(new Vector2Int((int)x, (int)y2-1));
                 corriTiles.Add(new Vector2Int((int)x, (int)y2));
+                //corriTiles.Add(new Vector2Int((int)x, (int)y2+1));
             }
 
         }

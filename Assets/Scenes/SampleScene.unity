@@ -1318,11 +1318,11 @@ MonoBehaviour:
     type: 3}
   tilemapVisualizer: {fileID: 1112686139}
   character: {fileID: 668319528}
-  Radius: 36
-  RoomAmount: 100
-  MeanRoomArea: 30
-  RoomAreaDevision: 15
-  PickedPropotion: 0.4
+  Radius: 40
+  RoomAmount: 105
+  MeanRoomArea: 70
+  RoomAreaDevision: 40
+  PickedPropotion: 0.24
   RoomList: []
 --- !u!4 &909915586
 Transform:
